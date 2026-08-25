@@ -1,0 +1,10 @@
+langgraph>=0.2.60
+langchain-groq>=0.2.1
+langchain-core>=0.3.23
+pydantic>=2.10.0
+typing_extensions>=4.12.2
+crawl4ai>=0.4.247
+playwright>=1.49.0
+supabase>=2.10.0
+sentence-transformers>=3.3.1
+python-dotenv>=1.0.1
