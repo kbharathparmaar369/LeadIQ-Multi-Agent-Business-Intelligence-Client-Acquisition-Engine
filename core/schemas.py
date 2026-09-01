@@ -36,7 +36,7 @@ class SiteAuditData(BaseModel):
     #SEO and metadata
     has_opengraph_tags: bool=False
     has_meta_description: bool=False
-    has_json_Id_schema: bool=False
+    has_json_ld_schema: bool=False
 
     #AI and Automation readinesss
     has_chatbot_or_ai_widget:bool=False
@@ -58,7 +58,7 @@ class SiteAuditData(BaseModel):
 # Critic Agent output
 
 class criticEvaluation(BaseModel):
-    is_email_valid:bool
+    is_email_valid_format: bool
     data_completeness_score:float
     flagged_issues: List[str] = Field(default_factory=list)
     needs_recrawl: bool=False
