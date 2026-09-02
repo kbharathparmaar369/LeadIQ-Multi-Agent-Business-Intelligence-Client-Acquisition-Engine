@@ -41,6 +41,66 @@ def draft_proposal(
         flaws_highlighted=flaws
     )
 
+def draft_no_website_proposal(business: DiscoveredBusiness) -> ProposalDraft:
+    case_studies = find_similar_case_studies(
+        f"new website for a {business.niche} business", top_k=1
+    )
+    
+    prompt = _build_no_website_prompt(business, case_studies)
+    
+    response = smart_llm.invoke(prompt)
+    raw_text = response.content.strip()
+    raw_text = re.sub(r"<think>.*?</think>", "", raw_text, flags=re.DOTALL).strip()
+    raw_text = raw_text.replace("```json", "").replace("```", "").strip()
+
+    try:
+        parsed = json.loads(raw_text)
+        subject = parsed.get("email_subject", f"Quick note for {business.business_name}")
+        body = parsed.get("email_body_markdown", raw_text)
+    except Exception as e:
+        print(f"Could not parse LLM output as JSON, using fallback: {e}")
+        subject = f"Quick note for {business.business_name}"
+        body = raw_text
+
+    return ProposalDraft(
+        email_subject=subject,
+        email_body_markdown=body,
+        matched_case_study_ids=[str(c.get("id", "")) for c in case_studies],
+        flaws_highlighted=["no website found"]
+    )
+
+def _build_no_website_prompt(business:DiscoveredBusiness,case_studies:list[dict])->str:
+    case_study_text = ""
+    if case_studies:
+        top_case = case_studies[0]
+        case_study_text = f"We previously built something similar: {top_case['result_summary']}"
+
+    return f"""You are writing a short, friendly cold email for a web engineering agency.
+    The email is to the owner of "{business.business_name}", a {business.niche} business in {business.location}.
+
+    We noticed this business does not appear to have a website at all - likely relying only on
+    their Google Maps listing and phone number for customers to find them.
+
+    Proof point to reference naturally (don't just paste it, weave it in):
+{case_study_text}
+
+Write a short cold email that:
+1. Opens with a specific, genuine observation about their business (not generic flattery)
+2. Points out, gently and non-judgmentally, that customers searching online may not find them easily without a website
+3. Briefly mentions the proof point
+4. Invites them to a free chat about what a simple website could look like for their business, low pressure
+5. Signs off simply, no fake name - use "The Team" as the sign-off
+
+Keep the email under 150 words. Do not use hype words like "revolutionary" or "game-changing".
+Do not be pushy or imply their business is failing without one - frame it as an opportunity, not a criticism.
+
+Reply with ONLY a JSON object in this exact format, nothing else:
+{{
+  "email_subject": "short subject line under 8 words",
+  "email_body_markdown": "the full email body"
+}}"""
+    
+    
 
 def _list_flaws(audit: SiteAuditData) -> list[str]:
     # turns the boolean audit signals into plain language
