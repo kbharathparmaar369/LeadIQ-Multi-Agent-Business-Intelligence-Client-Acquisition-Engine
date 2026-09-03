@@ -1,4 +1,8 @@
 # we will now compile all agents into a single 
+from core.schemas import DiscoveredBusiness
+import os
+os.environ.setdefault("LANGGRAPH_STRICT_MSGPACK", "false")
+
 
 from core.scrapers.site_crawler import audit_site
 from langgraph.graph import StateGraph, END
@@ -8,20 +12,28 @@ from core.schemas import AgentState, LeadStatus
 from core.scrapers.maps_discovery import discover_businesses
 from core.graph.nodes.critic import evaluate_data
 from core.graph.nodes.scoring import score_lead
-from core.graph.nodes.outreach import draft_proposal
+from core.graph.nodes.outreach import draft_proposal,draft_no_website_proposal
 
-import langgraph.checkpoint.serde.jsonplus as jsonplus
+def no_website_node(state: AgentState) -> dict:
+    business=state["discovered_business"]
+    proposal=draft_no_website_proposal(business)
+    return {"proposal_draft": proposal}
 
-jsonplus._msgpack_ext_hook_allowed_modules = jsonplus._msgpack_ext_hook_allowed_modules | {
-    ("core.schemas", "DiscoveredBusiness"),
-    ("core.schemas", "SiteAuditData"),
-    ("core.schemas", "CriticEvaluation"),
-    ("core.schemas", "LeadQualification"),
-    ("core.schemas", "LeadStatus"),
-    ("core.schemas", "ProposalDraft"),
-}
+def route_after_discovery(state: AgentState) -> str:
+    business=state.get("discovered_business")
+    if business is None:
+        return END
+    
+    if not business.website_url:
+        return "no_website_outreach"
+
+    return "research"
+    
 
 def discovery_node(state: AgentState) -> dict:
+    if state.get("discovered_business") is not None:
+        return {}
+    
     businesses = discover_businesses(
         niche=state["niche"],
         location=state["location"],
@@ -106,11 +118,20 @@ def build_graph():
     graph.add_node("critic", critic_node)
     graph.add_node("scoring", scoring_node)
     graph.add_node("outreach", outreach_node)
+    graph.add_node("no_website_outreach", no_website_node)
     graph.add_node("dispatch", dispatch_node)
 
     graph.set_entry_point("discovery")
 
-    graph.add_edge("discovery","research")
+    graph.add_conditional_edges(
+        "discovery",
+        route_after_discovery,
+        {
+            "research":"research",
+            "no_website_outreach":"no_website_outreach",
+            END:END,
+        },
+    )
     graph.add_edge("research","critic")
 
     graph.add_conditional_edges(
@@ -132,6 +153,7 @@ def build_graph():
     )
 
     graph.add_edge("outreach","dispatch")
+    graph.add_edge("no_website_outreach","dispatch")
     graph.add_edge("dispatch",END)
 
     checkpointer=MemorySaver()
@@ -140,7 +162,9 @@ def build_graph():
 
 app_graph = build_graph()
 
+
 if __name__ == "__main__":
+
     config = {"configurable": {"thread_id": "test-run-1"}}
 
     initial_state = {
@@ -149,6 +173,12 @@ if __name__ == "__main__":
         "batch_size": 1,
         "retry_count": 0,
         "error_log": [],
+        "discovered_business" :DiscoveredBusiness(
+            business_name="Dr. Chahal Aesthetic Clinic",
+            website_url=None,
+            location="Banglore",
+            niche="dental clinic",
+        ),
     }
 
     print("Running graph until HITL interrupt...")
