@@ -1,5 +1,6 @@
 import json
 import re
+import time
 
 from core.config import fast_llm
 from core.schemas import DiscoveredBusiness, SiteAuditData, criticEvaluation
@@ -22,6 +23,18 @@ PERSONAL_EMAIL_DOMAINS = [
     "msn.com",
     "live.com",
 ]
+
+def _invoke_with_retry(llm,prompt: str, max_attempts: int =2):
+    last_error=None
+    for attempt in range(1,max_attempts + 1):
+        try:
+            return llm.invoke(prompt)
+        except Exception as e:
+            last_error=e
+            print(f"LLM call failed (attempt {attempt} / {max_attempts}): {e}")
+            if attempt < max_attempts:
+                time.sleep(2)     
+    raise last_error
 
 def evaluate_data(business: DiscoveredBusiness, audit: SiteAuditData) -> criticEvaluation:
     flagged_issues: list[str] = []
@@ -97,7 +110,7 @@ Here is the data:
     """
 
     try:
-        response = fast_llm.invoke(prompt)
+        response = _invoke_with_retry(fast_llm,prompt)
         raw_text = response.content.strip()
 
         raw_text = raw_text.replace("```json", "").replace("```", "").strip()

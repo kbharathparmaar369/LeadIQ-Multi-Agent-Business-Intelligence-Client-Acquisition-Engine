@@ -1,9 +1,22 @@
 import json
 import re
-
+import time
 from core.config import smart_llm
 from core.schemas import DiscoveredBusiness, SiteAuditData, LeadQualification, ProposalDraft
 from core.rag.vector_store import find_similar_case_studies
+
+def _invoke_with_retry(llm,prompt: str, max_attempts: int = 2):
+    last_error = None
+    for attempt in range(1,max_attempts+1):
+        try:
+            return llm.invoke(prompt)
+        except Exception as e:
+            last_error = e 
+            print(f"LLM call failed (attempt {attempt} / {max_attempts}) : {e}")
+            if attempt < max_attempts:
+                time.sleep(2)
+    raise last_error
+    
 
 def draft_proposal(
     business: DiscoveredBusiness,
@@ -17,12 +30,10 @@ def draft_proposal(
 
     prompt = _build_prompt(business, flaws, case_studies)
 
-    response = smart_llm.invoke(prompt)
+    response = _invoke_with_retry(smart_llm,prompt)
     raw_text = response.content.strip()
-    
-    # Clean reasoning tags (e.g. from Qwen models) and markdown blocks
-    raw_text = re.sub(r"<think>.*?</think>", "", raw_text, flags=re.DOTALL).strip()
-    raw_text = raw_text.replace("```json", "").replace("```", "").strip()
+    raw_text = raw_text.replace("```json", "").replace("```","").strip()
+    raw_text=_strip_thinking_tags(raw_text)
 
     try:
         parsed = json.loads(raw_text)
@@ -41,6 +52,10 @@ def draft_proposal(
         flaws_highlighted=flaws
     )
 
+def _strip_thinking_tags(text: str)-> str:
+    return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+
+
 def draft_no_website_proposal(business: DiscoveredBusiness) -> ProposalDraft:
     case_studies = find_similar_case_studies(
         f"new website for a {business.niche} business", top_k=1
@@ -48,10 +63,10 @@ def draft_no_website_proposal(business: DiscoveredBusiness) -> ProposalDraft:
     
     prompt = _build_no_website_prompt(business, case_studies)
     
-    response = smart_llm.invoke(prompt)
+    response = _invoke_with_retry(smart_llm,prompt)
     raw_text = response.content.strip()
-    raw_text = re.sub(r"<think>.*?</think>", "", raw_text, flags=re.DOTALL).strip()
     raw_text = raw_text.replace("```json", "").replace("```", "").strip()
+    raw_text = _strip_thinking_tags(raw_text)
 
     try:
         parsed = json.loads(raw_text)
