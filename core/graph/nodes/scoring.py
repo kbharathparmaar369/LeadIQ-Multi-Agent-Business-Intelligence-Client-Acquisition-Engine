@@ -10,9 +10,10 @@ def score_lead(audit: SiteAuditData, critic : criticEvaluation)-> LeadQualificat
         2,
     )
 
-    status=compute_lead_status(final_score)
-    if status.value =="DISQUALIFIED":
-        disqualify_reason=_build_disqualify_reason(audit,tech_pain,commercial_intent,contact_quality)
+    status = compute_lead_status(final_score)
+    disqualify_reason = None
+    if status.value == "DISQUALIFIED":
+        disqualify_reason = _build_disqualify_reason(audit, tech_pain, commercial_intent, contact_quality)
 
     
     return LeadQualification(

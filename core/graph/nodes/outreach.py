@@ -48,8 +48,9 @@ def draft_proposal(
     return ProposalDraft(
         email_subject=subject,
         email_body_markdown=body,
+        recipient_email=audit.public_email,
         matched_case_study_ids=[str(c.get("id", "")) for c in case_studies],
-        flaws_highlighted=flaws
+        flaws_highlighted=flaws,
     )
 
 def _strip_thinking_tags(text: str)-> str:

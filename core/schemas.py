@@ -96,6 +96,7 @@ def compute_lead_status(final_score : float) -> LeadStatus:
 class ProposalDraft(BaseModel):
     email_subject:str
     email_body_markdown: str
+    recipient_email: Optional[str]= None
     matched_case_study_ids: List[str]=Field(default_factory=list)
     flaws_highlighted:List[str]=Field(default_factory=list)
 

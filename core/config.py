@@ -7,7 +7,7 @@ load_dotenv()
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY") or os.getenv("GROQ_API")
 GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
-GROQ_MODEL_SMART = os.getenv("GROQ_MODEL_SMART", "qwen/qwen3.6-27b")
+GROQ_MODEL_SMART = os.getenv("GROQ_MODEL_SMART", "openai/gpt-oss-120b")
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY") or os.getenv("SUPABASE_API")
@@ -25,13 +25,16 @@ else:
 fast_llm = ChatGroq(
     api_key=GROQ_API_KEY,
     model=GROQ_MODEL,
-    temperature=0
+    temperature=0,
+    reasoning_format="parsed"
+
 )
 
 smart_llm = ChatGroq(
     api_key=GROQ_API_KEY,
     model=GROQ_MODEL_SMART,
-    temperature=0.5
+    temperature=0.5,
+    reasoning_format="parsed"
 )
 
 
