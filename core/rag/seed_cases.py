@@ -22,6 +22,26 @@ SEED_CASE_STUDIES=[
         "description": "A restaurant had no WhatsApp or click-to-call links, forcing customers to call during busy hours.",
         "result_summary": "Added WhatsApp ordering and click-to-call buttons, reducing missed orders and improving customer response time.",
     },
+    {
+        "title": "Salon booked from scratch with a new website",
+        "description": "A hair and beauty salon had no website at all, relying only on a Google Maps listing and walk-ins.",
+        "result_summary": "Built a simple booking site from the ground up with service listings and an online scheduler - online bookings made up 35% of total appointments within two months.",
+    },
+    {
+        "title": "Real estate agent launched from zero online presence",
+        "description": "An independent real estate agent had no website, sharing listings only through WhatsApp broadcasts to past clients.",
+        "result_summary": "Built a lightweight listings site from scratch with photo galleries and an inquiry form - inbound inquiries from new clients tripled in the first month.",
+    },
+    {
+        "title": "Salon SEO and outdated design refresh",
+        "description": "A beauty salon's old WordPress site ran on jQuery, had no meta descriptions, and looked outdated on mobile.",
+        "result_summary": "Rebuilt with a modern responsive design and full SEO metadata, moving the salon onto the first page of local Google search results within three weeks.",
+    },
+     {
+        "title": "Real estate listings site performance fix",
+        "description": "A real estate firm's listings page took over 5 seconds to load due to uncompressed property photos.",
+        "result_summary": "Compressed and optimized all property images and added lazy loading, cutting load time to 1.5s and reducing bounce rate by 45%.",
+    },
 ]
 
 
