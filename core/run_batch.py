@@ -25,6 +25,7 @@ def run_batch(niche: str, location: str, batch_size: int = 5):
         "qualified": [],
         "needs_review": [],
         "disqualified": [],
+        "crawl_failed": [],
         "no_website": [],
         "errored": [],
     }
@@ -75,6 +76,8 @@ def run_batch(niche: str, location: str, batch_size: int = 5):
                 results["qualified"].append(business.business_name)
             elif status == "NEEDS_REVIEW":
                 results["needs_review"].append(business.business_name)
+            elif status == "CRAWL_FAILED":
+                results["crawl_failed"].append(business.business_name)
             else:
                 results["disqualified"].append(business.business_name)
         
@@ -89,6 +92,7 @@ def _print_summary(results: dict):
     print(f"Qualified    : {len(results['qualified'])} - {results['qualified']}")
     print(f"Needs Review : {len(results['needs_review'])} - {results['needs_review']}")
     print(f"Disqualified : {len(results['disqualified'])} - {results['disqualified']}")
+    print(f"Crawl Failed:  {len(results['crawl_failed'])} - {results['crawl_failed']}")
     print(f"No Website   : {len(results['no_website'])} - {results['no_website']}")
     print(f"Errored      : {len(results['errored'])} - {results['errored']}")
     print("===============================================\n")

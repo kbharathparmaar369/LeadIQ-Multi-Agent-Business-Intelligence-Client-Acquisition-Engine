@@ -57,11 +57,14 @@ class SiteAuditData(BaseModel):
 
 # Critic Agent output
 
-class criticEvaluation(BaseModel):
+class CriticEvaluation(BaseModel):
     is_email_valid_format: bool
     data_completeness_score:float
     flagged_issues: List[str] = Field(default_factory=list)
     needs_recrawl: bool=False
+
+# Alias for backward compatibility
+criticEvaluation = CriticEvaluation
 
 # scoring Agent output
 
@@ -69,7 +72,7 @@ class  LeadStatus(str,Enum):
     QUALIFIED="QUALIFIED"
     NEEDS_REVIEW="NEEDS_REVIEW"
     DISQUALIFIED="DISQUALIFIED"
-
+    CRAWL_FAILED = "CRAWL_FAILED"
 
 class LeadQualification(BaseModel):
     tech_pain_score: float

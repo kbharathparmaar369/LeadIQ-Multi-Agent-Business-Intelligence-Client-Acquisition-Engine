@@ -1,6 +1,20 @@
+from core.schemas import LeadStatus
 from core.schemas import SiteAuditData, criticEvaluation, LeadQualification, compute_lead_status
 
+
+
 def score_lead(audit: SiteAuditData, critic : criticEvaluation)-> LeadQualification:
+    if _is_total_crawl_failure(audit):
+        return LeadQualification(
+            tech_pain_score=0.0,
+            commercial_intent_score=0.0,
+            contact_quality_score=0.0,
+            final_score=0.0,
+            status=LeadStatus.CRAWL_FAILED,
+            disqualify_reason="Website couldnt be reached or crawled (dead domain, DNS failure, or persistent block)"
+        )
+    
+    
     tech_pain=_calculate_tech_pain(audit)
     commercial_intent=_calculate_commercial_intent(audit)
     contact_quality=_calculate_contact_quality(audit,critic)
@@ -75,6 +89,16 @@ def _calculate_commercial_intent(audit: SiteAuditData) -> float:
         score -=20
 
     return max(score,0)
+
+
+def _is_total_crawl_failure(audit: SiteAuditData) -> bool:
+    return (
+        audit.load_time_seconds is None
+        and audit.headline_copy is None
+        and audit.public_email is None
+        and audit.detected_framework in (None, "Unknown")
+    )
+
 
 def _calculate_contact_quality(audit:SiteAuditData, critic: criticEvaluation) -> float:
 
