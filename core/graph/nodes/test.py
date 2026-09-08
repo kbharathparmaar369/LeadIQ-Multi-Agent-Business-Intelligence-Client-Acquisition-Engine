@@ -1,25 +1,14 @@
-from core.graph.workflow import app_graph
-from core.schemas import DiscoveredBusiness
-import uuid
+from core.graph.nodes.scoring import score_lead
+from core.schemas import SiteAuditData, CriticEvaluation
 
-config2 = {"configurable": {"thread_id": str(uuid.uuid4())}}
+# Simulates what a totally failed crawl looks like - everything empty
+empty_audit = SiteAuditData(website_url="http://ankithrealtors.online/")
+empty_critic = CriticEvaluation(
+    is_email_valid_format=False,
+    data_completeness_score=0.0,
+    flagged_issues=["No data retrieved"],
+    needs_recrawl=True,
+)
 
-initial_state2 = {
-    "niche": "dental clinic",
-    "location": "Bangalore",
-    "batch_size": 1,
-    "retry_count": 0,
-    "error_log": [],
-    "discovered_business": DiscoveredBusiness(
-        business_name="VK Dental Care",
-        website_url="https://vkdentalcare.co.in/",
-        location="Bangalore",
-        niche="dental clinic",
-    ),
-}
-
-for event in app_graph.stream(initial_state2, config=config2):
-    print(event)
-
-state2 = app_graph.get_state(config2)
-print("\nProposal 2:", state2.values.get("proposal_draft"))
+result = score_lead(empty_audit, empty_critic)
+print(result)

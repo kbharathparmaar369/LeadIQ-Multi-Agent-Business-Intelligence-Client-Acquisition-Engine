@@ -5,6 +5,8 @@ It discovers businesses, audits their websites, scores them as leads, and drafts
 outreach emails — all compiled into a single LangGraph workflow that Person B's
 backend imports and runs.
 
+> 📖 **Looking for a beginner-friendly, step-by-step breakdown?** Check out [**`HOW_IT_WORKS.md`**](file:///d:/MY%20PROJECTS/lead-intelligence-engine/HOW_IT_WORKS.md) for a plain-English explanation, visual flowchart, and component guide.
+
 ## Folder structure
 
 ```text
